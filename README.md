@@ -14,6 +14,8 @@ Lists image suppression records.
 
 - Python 3
 - requests
+- python-dotenv
+- PyJWT
 
 ## Installation
 
