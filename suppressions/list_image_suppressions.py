@@ -47,7 +47,7 @@ def get_acks(image,token):
     )
         
 def get_token():
-    endpoint='https://api.cloudsploit.com'
+    endpoint='https://eu-1.api.cloudsploit.com'
     path='/v2/tokens'
     url=endpoint + path
     timestamp=str(int(time.time() * 1000))
@@ -81,8 +81,8 @@ def get_token():
             'X-Timestamp': timestamp}
     r = requests.post(url,data=body,headers=headers)
     data = r.json()
-    #print(data)
+    print(data)
     return data['data']
 
 token = get_token()
-get_acks('ubi8/toolbox',token)
+get_acks('amazonlinux',token)
