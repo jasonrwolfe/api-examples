@@ -20,7 +20,7 @@ if not API_KEY or not API_SECRET:
     )
 
 def get_acks(image,token):
-    endpoint = "https://"+HOST+"/api/v2/risks/acknowledge?skip_count=true&text_search="+image
+    endpoint = "https://" + HOST + "/api/v2/risks/acknowledge?skip_count=true&text_search="+image
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -37,7 +37,7 @@ def get_acks(image,token):
         f"Resource: {fields['resource_cpe']} "
         f"Suppression Rule: {fields.get('suppression_rule_name', 'N/A')} "
         f"Author: {fields['author']} "
-        f"Comment: {fields['comment']} "
+        f"Reason: {fields['comment']} "
         f"Created: {fields['date']} "
         f"Expiration Days: {fields['expiration_days']} "
         f"Days Until Exp: {fields['days_until_expiration']}"
