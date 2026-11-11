@@ -1,4 +1,3 @@
-cat > README.md <<'EOF'
 # API Examples
 
 Python examples for interacting with APIs.
