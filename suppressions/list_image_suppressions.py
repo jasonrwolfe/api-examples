@@ -12,14 +12,15 @@ load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
 API_SECRET=os.getenv("API_SECRET")
+HOST=os.getenv("HOST")
 
 if not API_KEY or not API_SECRET:
     raise RuntimeError(
-        "API_KEY and API_SECRET must be set in the environment or .env file"
+        "API_KEY, API_SECRET and HOST must be set in the environment or .env file"
     )
 
 def get_acks(image,token):
-    endpoint = "https://e11d515bfb.cloud.aquasec.com/api/v2/risks/acknowledge?skip_count=true&text_search="+image
+    endpoint = "https://"+HOST+"/api/v2/risks/acknowledge?skip_count=true&text_search="+image
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
