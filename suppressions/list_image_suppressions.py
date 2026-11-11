@@ -34,6 +34,9 @@ def get_acks(image,token):
     for fields in field_list:
         print(
         f"{fields['issue_name']} "
+        f"Repository: {fields.get('repository', 'N/A')} "
+        f"Image: {fields.get('image', 'N/A')} "
+        f"Registry: {fields['registry']} "
         f"Resource: {fields['resource_cpe']} "
         f"Suppression Rule: {fields.get('suppression_rule_name', 'N/A')} "
         f"Author: {fields['author']} "
