@@ -90,6 +90,7 @@ def get_acks(image, token):
     params = {
         "skip_count": "true",
         "text_search": image,
+        "search_attribute": "scope"
     }
 
     response = requests.get(
