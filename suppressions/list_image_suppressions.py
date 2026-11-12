@@ -1,89 +1,135 @@
-import time
-import requests
 import hashlib
-import json
 import hmac
-from dotenv import load_dotenv
+import json
 import os
-#pip3 install pyjwt
-import jwt
+import time
+import argparse
+
+import requests
+from dotenv import load_dotenv
+
 
 load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
-API_SECRET=os.getenv("API_SECRET")
-HOST=os.getenv("HOST")
-AUTH_HOST=os.getenv("AUTH_HOST")
+API_SECRET = os.getenv("API_SECRET")
+HOST = os.getenv("HOST")
+AUTH_HOST = os.getenv("AUTH_HOST")
 
-if not API_KEY or not API_SECRET:
+required_vars = {
+    "API_KEY": API_KEY,
+    "API_SECRET": API_SECRET,
+    "HOST": HOST,
+    "AUTH_HOST": AUTH_HOST,
+}
+
+missing = [name for name, value in required_vars.items() if not value]
+
+if missing:
     raise RuntimeError(
-        "API_KEY, API_SECRET, HOST and AUTH_HOST must be set in the environment or .env file"
+        f"Missing required environment variables: {', '.join(missing)}"
     )
 
-def get_acks(image,token):
-    endpoint = "https://" + HOST + "/api/v2/risks/acknowledge?skip_count=true&text_search="+image
+
+def get_token():
+    path = "/v2/tokens"
+    url = f"https://{AUTH_HOST}{path}"
+    timestamp = str(int(time.time() * 1000))
+    method = "POST"
+
+    payload = {
+        "allowed_endpoints": [
+            "DELETE",
+            "GET",
+            "HEAD",
+            "OPTIONS",
+            "PATCH",
+            "POST",
+            "PUT",
+            "ANY",
+        ],
+        "validity": 240,
+    }
+
+    body = json.dumps(payload, separators=(",", ":"))
+    string_to_sign = timestamp + method + path + body
+
+    signature = hmac.new(
+        API_SECRET.encode("utf-8"),
+        msg=string_to_sign.encode("utf-8"),
+        digestmod=hashlib.sha256,
+    ).hexdigest()
+
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
+        "X-API-Key": API_KEY,
+        "X-Signature": signature,
+        "X-Timestamp": timestamp,
     }
-    
-    response = requests.get(endpoint, headers=headers)
-    data = response.json()
-    #print(data)
-    field_list = data['result']
-    for fields in field_list:
-        print(
-        f"{fields['issue_name']} "
-        f"Repository: {fields.get('repository', 'N/A')} "
-        f"Image: {fields.get('image', 'N/A')} "
-        f"Registry: {fields['registry']} "
-        f"Resource: {fields['resource_cpe']} "
-        f"Suppression Rule: {fields.get('suppression_rule_name', 'N/A')} "
-        f"Author: {fields['author']} "
-        f"Reason: {fields['comment']} "
-        f"Created: {fields['date']} "
-        f"Expiration Days: {fields['expiration_days']} "
-        f"Days Until Exp: {fields['days_until_expiration']}"
+
+    response = requests.post(
+        url,
+        data=body,
+        headers=headers,
+        timeout=30,
     )
-        
-def get_token():
-    endpoint='https://'+AUTH_HOST
-    path='/v2/tokens'
-    url=endpoint + path
-    timestamp=str(int(time.time() * 1000))
-    method='POST'
-    json_data = {
-                "allowed_endpoints": [
-                    "DELETE",
-                    "GET",
-                    "HEAD",
-                    "OPTIONS",
-                    "PATCH",
-                    "POST",
-                    "PUT",
-                    "ANY"
-                ],
-                "validity": 240,
-                "csp_roles":["jasonRole"]
-            }
+    response.raise_for_status()
 
-    body=json.dumps(json_data,separators=(',', ':'))
+    return response.json()["data"]
 
-    string = timestamp + method + path + body
 
-    sig = hmac.new(API_SECRET.encode('utf-8'), msg=string.encode('utf-8'), digestmod=hashlib.sha256).hexdigest()
+def get_acks(image, token):
+    url = f"https://{HOST}/api/v2/risks/acknowledge"
 
-    headers={
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "X-API-Key": API_KEY,
-            "X-Signature": sig,
-            'X-Timestamp': timestamp}
-    r = requests.post(url,data=body,headers=headers)
-    data = r.json()
-    #print(data)
-    return data['data']
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {token}",
+    }
 
-token = get_token()
-get_acks('amazonlinux',token)
+    params = {
+        "skip_count": "true",
+        "text_search": image,
+    }
+
+    response = requests.get(
+        url,
+        headers=headers,
+        params=params,
+        timeout=30,
+    )
+    response.raise_for_status()
+
+    for fields in response.json().get("result", []):
+        print(
+            f"{fields.get('issue_name', 'N/A')} "
+            f"Repository: {fields.get('repository', 'N/A')} "
+            f"Image: {fields.get('image', 'N/A')} "
+            f"Registry: {fields.get('registry', 'N/A')} "
+            f"Resource: {fields.get('resource_cpe', 'N/A')} "
+            f"Suppression Rule: {fields.get('suppression_rule_name', 'N/A')} "
+            f"Author: {fields.get('author', 'N/A')} "
+            f"Reason: {fields.get('comment', 'N/A')} "
+            f"Created: {fields.get('date', 'N/A')} "
+            f"Expiration Days: {fields.get('expiration_days', 'N/A')} "
+            f"Days Until Exp: {fields.get('days_until_expiration', 'N/A')}"
+        )
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="List image vulnerability suppressions"
+    )
+    parser.add_argument(
+        "image",
+        help="Image name to search for, e.g. amazonlinux",
+    )
+
+    args = parser.parse_args()
+
+    token = get_token()
+    get_acks(args.image, token)
+
+
+if __name__ == "__main__":
+    main()
