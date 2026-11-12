@@ -13,10 +13,11 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")
 API_SECRET=os.getenv("API_SECRET")
 HOST=os.getenv("HOST")
+AUTH_HOST=os.getenv("AUTH_HOST")
 
 if not API_KEY or not API_SECRET:
     raise RuntimeError(
-        "API_KEY, API_SECRET and HOST must be set in the environment or .env file"
+        "API_KEY, API_SECRET, HOST and AUTH_HOST must be set in the environment or .env file"
     )
 
 def get_acks(image,token):
@@ -47,7 +48,7 @@ def get_acks(image,token):
     )
         
 def get_token():
-    endpoint='https://eu-1.api.cloudsploit.com'
+    endpoint='https://'+AUTH_HOST
     path='/v2/tokens'
     url=endpoint + path
     timestamp=str(int(time.time() * 1000))
@@ -81,7 +82,7 @@ def get_token():
             'X-Timestamp': timestamp}
     r = requests.post(url,data=body,headers=headers)
     data = r.json()
-    print(data)
+    #print(data)
     return data['data']
 
 token = get_token()
