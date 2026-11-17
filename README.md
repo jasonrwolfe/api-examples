@@ -6,27 +6,63 @@ Python examples for interacting with APIs.
 
 ### List Image Suppressions
 
-`apis/suppressions/list_image_suppressions.py`
+`suppressions/list_image_suppressions.py`
 
-Lists image vulnerability suppression records matching a specified image name.
+Lists image suppression records matching a specified image name.
 
-### Usage
+#### Usage
 
 ```bash
-python3 apis/suppressions/list_image_suppressions.py <image>
+python3 suppressions/list_image_suppressions.py <image>
 ```
 
 Example:
 
 ```bash
-python3 apis/suppressions/list_image_suppressions.py amazonlinux
+python3 suppressions/list_image_suppressions.py amazonlinux
+```
+
+### List Image Vulnerability Suppressions
+
+`suppressions/list_image_vuln_suppressions.py`
+
+Lists acknowledged image vulnerabilities and vulnerability suppressions matching a specified image name.
+
+The script includes acknowledged parent vulnerabilities and referenced CVEs. If a parent vulnerability is acknowledged, its referenced vulnerabilities are also included.
+
+An optional registry can be specified to limit results to a specific registry.
+
+#### Usage
+
+```bash
+python3 suppressions/list_image_vuln_suppressions.py <image> [registry]
+```
+
+Examples:
+
+Search across registries:
+
+```bash
+python3 suppressions/list_image_vuln_suppressions.py amazonlinux
+```
+
+Search within a specific registry:
+
+```bash
+python3 suppressions/list_image_vuln_suppressions.py amazonlinux "Docker Hub"
+```
+
+Another registry example:
+
+```bash
+python3 suppressions/list_image_vuln_suppressions.py amazonlinux "Ad Hoc Scans"
 ```
 
 ## Requirements
 
 - Python 3
-- requests
-- python-dotenv
+- `requests`
+- `python-dotenv`
 
 ## Installation
 
@@ -38,49 +74,15 @@ pip3 install -r requirements.txt
 
 ## Configuration
 
-The examples require the following environment variables:
+Create a `.env` file containing the required API configuration:
 
-- `API_KEY` - API key used for authentication
-- `API_SECRET` - API secret used to sign authentication requests
-- `HOST` - API hostname
-- `AUTH_HOST` - Authentication API hostname
-
-### Using a `.env` File
-
-Copy the example environment file:
-
-```bash
-cp .env.example .env
+```dotenv
+API_KEY=<api-key>
+API_SECRET=<api-secret>
+HOST=<api-host>
+AUTH_HOST=<authentication-host>
 ```
 
-Update `.env` with the appropriate values:
+The scripts load these values from the environment using `python-dotenv`.
 
-```text
-API_KEY=your_api_key
-API_SECRET=your_api_secret
-HOST=your_api_host
-AUTH_HOST=your_auth_host
-```
-
-The `.env` file contains credentials and should not be committed to the repository.
-
-### Using Environment Variables
-
-Alternatively, export the variables in your shell:
-
-```bash
-export API_KEY="your_api_key"
-export API_SECRET="your_api_secret"
-export HOST="your_api_host"
-export AUTH_HOST="your_auth_host"
-```
-
-Then run the example:
-
-```bash
-python3 apis/suppressions/list_image_suppressions.py amazonlinux
-```
-
-## Security
-
-Do not commit API keys, API secrets, `.env` files, or other credentials to the repository. The repository's `.gitignore` should exclude `.env`.
+> **Note:** Do not commit the `.env` file or API credentials to source control.
