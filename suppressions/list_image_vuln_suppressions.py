@@ -192,7 +192,7 @@ def main():
         "registry",
         nargs="?",
         default=None,
-        help='Optional registry name, e.g. "Docker Hub"',
+        help='Optional registry name, e.g. "Docker Hub", "Ad Hoc Scans"',
     )
 
     args = parser.parse_args()
